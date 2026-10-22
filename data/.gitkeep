@@ -1,0 +1,2 @@
+# Retain data directory structure in Git while keeping large CSV datasets excluded.
+# Download train.csv, store.csv, and test.csv into this folder.

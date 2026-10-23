@@ -4,12 +4,18 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
+import urllib.request
 import joblib
 import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+
+BASE_DIR = Path(__file__).resolve().parent
+DEFAULT_MODEL_PATH = BASE_DIR / "models" / "sales_model.joblib"
+GITHUB_MODEL_RAW = "https://raw.githubusercontent.com/leoooww/store-sales-prediction/main/models/sales_model.joblib"
+GITHUB_SAMPLE_RAW = "https://raw.githubusercontent.com/leoooww/store-sales-prediction/main/data/historical_sample.csv.gz"
 
 st.set_page_config(
     page_title="Retail Sales Forecasting & Geospatial Analytics",
@@ -60,21 +66,37 @@ def render_chart(fig: go.Figure) -> None:
 
 
 @st.cache_resource(show_spinner=False)
-def load_model_bundle(model_path: str = "models/sales_model.joblib") -> Optional[Dict[str, Any]]:
-    path = Path(model_path)
+def load_model_bundle(model_path: Optional[str | Path] = None) -> Optional[Dict[str, Any]]:
+    path = Path(model_path) if model_path is not None else DEFAULT_MODEL_PATH
+    if not path.is_absolute():
+        path = BASE_DIR / path
+
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            with st.spinner("Downloading trained model artifact from repository..."):
+                urllib.request.urlretrieve(GITHUB_MODEL_RAW, path)
+        except Exception as dl_err:
+            st.error(f"Failed to fetch model artifact from remote: {dl_err}")
+            return None
+
     if not path.exists():
         return None
+
     try:
         return joblib.load(path)
     except Exception as exc:
-        st.error(f"Failed to load model artifact: {exc}")
+        st.error(f"Failed to load model artifact ({path}): {exc}")
         return None
 
 
 @st.cache_data(show_spinner=False)
-def load_historical_sample(sales_path: str = "data/train.csv", max_rows: int = 150000) -> pd.DataFrame:
-    path = Path(sales_path)
-    fallback_path = Path("data/historical_sample.csv.gz")
+def load_historical_sample(sales_path: Optional[str | Path] = None, max_rows: int = 150000) -> pd.DataFrame:
+    path = Path(sales_path) if sales_path is not None else (BASE_DIR / "data" / "train.csv")
+    if not path.is_absolute():
+        path = BASE_DIR / path
+
+    fallback_path = BASE_DIR / "data" / "historical_sample.csv.gz"
 
     cols = ["Store", "Date", "Sales", "Customers", "Open", "Promo", "DayOfWeek"]
     if path.exists():
@@ -82,7 +104,15 @@ def load_historical_sample(sales_path: str = "data/train.csv", max_rows: int = 1
     elif fallback_path.exists():
         df = pd.read_csv(fallback_path, usecols=cols, low_memory=False)
     else:
-        return pd.DataFrame()
+        try:
+            fallback_path.parent.mkdir(parents=True, exist_ok=True)
+            urllib.request.urlretrieve(GITHUB_SAMPLE_RAW, fallback_path)
+            if fallback_path.exists():
+                df = pd.read_csv(fallback_path, usecols=cols, low_memory=False)
+            else:
+                return pd.DataFrame()
+        except Exception:
+            return pd.DataFrame()
 
     df["Date"] = pd.to_datetime(df["Date"])
     df = df[df["Open"] == 1].sort_values("Date")
@@ -367,8 +397,12 @@ def main():
 
     model_bundle = load_model_bundle()
     if model_bundle is None:
-        st.warning(
-            "Model artifact `models/sales_model.joblib` not found. Run `python stores_analysis.py` first to train and export the model."
+        st.error(
+            f"Model artifact could not be loaded from `{DEFAULT_MODEL_PATH}`.\n\n"
+            f"- Working directory: `{Path.cwd()}`\n"
+            f"- Models directory exists: `{DEFAULT_MODEL_PATH.parent.exists()}`\n"
+            f"- Model file exists: `{DEFAULT_MODEL_PATH.exists()}`\n\n"
+            "Please reboot the app on Streamlit Cloud (**Manage app** in bottom-right -> `⋮` -> **Reboot app**) to fetch the latest commits and clear cache."
         )
         st.stop()
 

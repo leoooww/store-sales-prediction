@@ -18,7 +18,7 @@ GITHUB_MODEL_RAW = "https://raw.githubusercontent.com/leoooww/store-sales-predic
 GITHUB_SAMPLE_RAW = "https://raw.githubusercontent.com/leoooww/store-sales-prediction/main/data/historical_sample.csv.gz"
 
 st.set_page_config(
-    page_title="Retail Sales Forecasting & Geospatial Analytics",
+    page_title="Retail Store Sales Forecasting & Demand Analytics",
     page_icon="🗺️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -444,8 +444,7 @@ def build_geospatial_map(
 
 
 def main():
-    st.title("Store Sales Demand & Competitive Catchment")
-    st.caption("Gradient boosted tree regression engine paired with real-time geospatial radius analytics")
+    st.title("Retail Store Sales Forecasting & Demand Analytics")
 
     model_bundle = load_model_bundle()
     if model_bundle is None:

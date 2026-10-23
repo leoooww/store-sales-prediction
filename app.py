@@ -74,10 +74,16 @@ def load_model_bundle(model_path: str = "models/sales_model.joblib") -> Optional
 @st.cache_data(show_spinner=False)
 def load_historical_sample(sales_path: str = "data/train.csv", max_rows: int = 150000) -> pd.DataFrame:
     path = Path(sales_path)
-    if not path.exists():
-        return pd.DataFrame()
+    fallback_path = Path("data/historical_sample.csv.gz")
+
     cols = ["Store", "Date", "Sales", "Customers", "Open", "Promo", "DayOfWeek"]
-    df = pd.read_csv(path, usecols=cols, low_memory=False, nrows=max_rows)
+    if path.exists():
+        df = pd.read_csv(path, usecols=cols, low_memory=False, nrows=max_rows)
+    elif fallback_path.exists():
+        df = pd.read_csv(fallback_path, usecols=cols, low_memory=False)
+    else:
+        return pd.DataFrame()
+
     df["Date"] = pd.to_datetime(df["Date"])
     df = df[df["Open"] == 1].sort_values("Date")
     return df

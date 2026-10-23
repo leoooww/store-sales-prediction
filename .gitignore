@@ -35,16 +35,17 @@ ENV/
 # Data & Large Files (Strictly exclude large dataset CSVs and archives)
 data/*
 !data/.gitkeep
+!data/historical_sample.csv.gz
 *.csv
 *.tsv
 *.parquet
 *.zip
 *.tar.gz
 
-# Model weights & Checkpoints (serialized binary artifacts)
+# Model weights & Checkpoints (allow exported app bundle)
 models/*
 !models/.gitkeep
-models/*.joblib
+!models/sales_model.joblib
 models/*.json
 models/*.onnx
 

@@ -27,6 +27,57 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,slnt,wdth,wght,GRAD,ROND@8..144,-10..0,25..150,100..1000,-400..400,0..100&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+    /* 1. Base font-family on root container and typography elements */
+    html, body, .stApp,
+    h1, h2, h3, h4, h5, h6,
+    p, label, input, textarea, select,
+    .stMarkdown, .stText, .stCaption,
+    .stButton > button, .stDownloadButton > button,
+    .stSelectbox, .stMultiSelect, .stRadio, .stCheckbox,
+    .stSlider, .stNumberInput, .stTextInput,
+    .stMetric, [data-testid="stMetricValue"], [data-testid="stMetricLabel"],
+    .metric-card, .metric-label, .metric-value, .metric-sub,
+    [data-testid="stTable"], [data-testid="stDataFrame"],
+    [data-testid="stSidebar"] {
+        font-family: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    }
+
+    /* 2. Code and monospace blocks */
+    code, pre, pre *, code *, kbd {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace !important;
+    }
+
+    /* 3. MATERIAL SYMBOLS & ICONS: Strictly target icon spans to preserve glyphs without breaking toolbar flex containers */
+    [data-testid="stIconMaterial"],
+    [data-testid*="Icon"]:not([data-testid="stChatMessageAvatarImage"]),
+    [data-testid*="icon"],
+    span[translate="no"],
+    .material-symbols-rounded,
+    .material-symbols-outlined,
+    .material-icons,
+    span[class*="e1vmumty"],
+    [data-testid="stSidebarCollapseButton"] span,
+    [data-testid="stExpandSidebarButton"] span,
+    [data-testid="collapsedControl"] span,
+    [data-baseweb="popover"] span[translate="no"],
+    [data-baseweb="menu"] span[translate="no"] {
+        font-family: 'Material Symbols Rounded', 'Material Symbols Outlined', 'Material Icons' !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        font-feature-settings: 'liga' 1 !important;
+        -webkit-font-feature-settings: 'liga' 1 !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
+        word-wrap: normal !important;
+        white-space: nowrap !important;
+        direction: ltr !important;
+        -webkit-font-smoothing: antialiased !important;
+    }
+
+    /* Metric cards styling */
     .metric-card {
         background-color: #f8f9fa;
         border: 1px solid #e9ecef;
@@ -59,6 +110,7 @@ st.markdown(
 
 def render_chart(fig: go.Figure) -> None:
     """Render Plotly chart with fallback for Streamlit version differences."""
+    fig.update_layout(font_family="Google Sans Flex, sans-serif")
     try:
         st.plotly_chart(fig, width="stretch")
     except TypeError:
